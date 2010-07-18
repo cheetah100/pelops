@@ -4,6 +4,7 @@ import org.apache.cassandra.thrift.Clock;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.wyki.cassandra.pelops.ThriftPool.Connection;
+import org.wyki.cassandra.pelops.keys.Key;
 
 import static org.wyki.cassandra.pelops.Bytes.fromUTF8;
 import static org.wyki.cassandra.pelops.Bytes.nullSafeGet;
@@ -47,19 +48,7 @@ public class KeyDeletor extends Operand {
 	 * @param cLevel					The Cassandra consistency level to be used
 	 * @throws Exception
 	 */
-	public void deleteRow(final String rowKey, final String columnFamily, final ConsistencyLevel cLevel) throws Exception {
-		deleteRow(fromUTF8(rowKey), columnFamily, cLevel);
-	}
-
-	/**
-	 * Delete a row with a specified key from a specified column family. The function succeeds even if
-	 * the row does not exist.
-	 * @param rowKey					The key of the row
-	 * @param columnFamily				The column family from which to delete the row
-	 * @param cLevel					The Cassandra consistency level to be used
-	 * @throws Exception
-	 */
-	public void deleteRow(final Bytes rowKey, final String columnFamily, final ConsistencyLevel cLevel) throws Exception {
+	public void deleteRow(final Key rowKey, final String columnFamily, final ConsistencyLevel cLevel) throws Exception {
 		IOperation operation = new IOperation() {
 			@Override
 			public Object execute(Connection conn) throws Exception {

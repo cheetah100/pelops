@@ -1,5 +1,7 @@
 package org.wyki.cassandra.pelops;
 
+import org.wyki.cassandra.pelops.keys.Key;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,7 +105,24 @@ public class Bytes {
         return transformed;
     }
 
+    public static List<byte[]> transformKeys(List<Key> arrays) {
+        if (arrays == null) return null;
+
+        List<byte[]> transformed = new ArrayList<byte[]>(arrays.size());
+        for (Key key : arrays) {
+            transformed.add(key.getBytes());
+        }
+
+        return transformed;
+    }
+
+
     public static byte[] nullSafeGet(Bytes bytes) {
         return bytes == null ? null : bytes.getBytes();
     }
+
+    public static byte[] nullSafeGet(Key key) {
+        return key == null ? null : key.getBytes();
+    }
+
 }

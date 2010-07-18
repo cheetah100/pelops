@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.cassandra.thrift.*;
 import org.wyki.cassandra.pelops.ThriftPool.Connection;
+import org.wyki.cassandra.pelops.keys.Key;
 
 import static org.wyki.cassandra.pelops.Bytes.*;
 
@@ -28,8 +29,8 @@ public class Selector extends Operand {
      * @return                              The count of the columns
      * @throws Exception
      */
-    public int getColumnCount(String rowKey, String columnFamily, ConsistencyLevel cLevel) throws Exception {
-        return getColumnCount(fromUTF8(rowKey), newColumnParent(columnFamily), null, cLevel);
+    public int getColumnCount(Key rowKey, String columnFamily, ConsistencyLevel cLevel) throws Exception {
+        return getColumnCount(rowKey, newColumnParent(columnFamily), null, cLevel);
     }
 
     /**
@@ -41,8 +42,8 @@ public class Selector extends Operand {
      * @return                              The count of the sub-columns
      * @throws Exception
      */
-    public int getSubColumnCount(String rowKey, String columnFamily, Bytes superColName, ConsistencyLevel cLevel) throws Exception {
-        return getColumnCount(fromUTF8(rowKey), newColumnParent(columnFamily, superColName), null, cLevel);
+    public int getSubColumnCount(Key rowKey, String columnFamily, Bytes superColName, ConsistencyLevel cLevel) throws Exception {
+        return getColumnCount(rowKey, newColumnParent(columnFamily, superColName), null, cLevel);
     }
 
     /**
@@ -54,8 +55,8 @@ public class Selector extends Operand {
      * @return                              The count of the sub-columns
      * @throws Exception if an error occurs
      */
-    public int getSubColumnCount(String rowKey, String columnFamily, String superColName, ConsistencyLevel cLevel) throws Exception {
-        return getColumnCount(fromUTF8(rowKey), newColumnParent(columnFamily, superColName), null, cLevel);
+    public int getSubColumnCount(Key rowKey, String columnFamily, String superColName, ConsistencyLevel cLevel) throws Exception {
+        return getColumnCount(rowKey, newColumnParent(columnFamily, superColName), null, cLevel);
     }
 
     /**
@@ -66,11 +67,11 @@ public class Selector extends Operand {
      * @return                              The count of the super columns
      * @throws Exception if an error occurs
      */
-    public int getSuperColumnCount(String rowKey, String columnFamily, ConsistencyLevel cLevel) throws Exception {
-        return getColumnCount(fromUTF8(rowKey), newColumnParent(columnFamily), null, cLevel);
+    public int getSuperColumnCount(Key rowKey, String columnFamily, ConsistencyLevel cLevel) throws Exception {
+        return getColumnCount(rowKey, newColumnParent(columnFamily), null, cLevel);
     }
 
-    private int getColumnCount(final Bytes rowKey, final ColumnParent colParent, final SlicePredicate predicate, final ConsistencyLevel cLevel) throws Exception {
+    private int getColumnCount(final Key rowKey, final ColumnParent colParent, final SlicePredicate predicate, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
@@ -89,7 +90,7 @@ public class Selector extends Operand {
      * @return                              The requested <code>Column</code>
      * @throws Exception if an error occurs
      */
-    public Column getColumnFromRow(final String rowKey, final String columnFamily, final String colName, final ConsistencyLevel cLevel) throws Exception {
+    public Column getColumnFromRow(final Key rowKey, final String columnFamily, final String colName, final ConsistencyLevel cLevel) throws Exception {
         return getColumnFromRow(rowKey, columnFamily, fromUTF8(colName), cLevel);
     }
 
@@ -102,20 +103,7 @@ public class Selector extends Operand {
      * @return                              The requested <code>Column</code>
      * @throws Exception if an error occurs
      */
-    public Column getColumnFromRow(final String rowKey, final String columnFamily, final Bytes colName, final ConsistencyLevel cLevel) throws Exception {
-        return getColumnFromRow(fromUTF8(rowKey), columnFamily, colName, cLevel);
-    }
-
-    /**
-     * Retrieve a column from a row.
-     * @param rowKey                        The key of the row
-     * @param columnFamily                  The name of the column family containing the column
-     * @param colName                       The name of the column to retrieve
-     * @param cLevel                        The Cassandra consistency level with which to perform the operation
-     * @return                              The requested <code>Column</code>
-     * @throws Exception if an error occurs
-     */
-    public Column getColumnFromRow(final Bytes rowKey, final String columnFamily, final Bytes colName, final ConsistencyLevel cLevel) throws Exception {
+    public Column getColumnFromRow(final Key rowKey, final String columnFamily, final Bytes colName, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
@@ -137,7 +125,7 @@ public class Selector extends Operand {
      * @return                              The requested <code>SuperColumn</code>
      * @throws Exception if an error occurs
      */
-    public SuperColumn getSuperColumnFromRow(final String rowKey, final String columnFamily, final String superColName, final ConsistencyLevel cLevel) throws Exception {
+    public SuperColumn getSuperColumnFromRow(final Key rowKey, final String columnFamily, final String superColName, final ConsistencyLevel cLevel) throws Exception {
         return getSuperColumnFromRow(rowKey, columnFamily, fromUTF8(superColName), cLevel);
     }
 
@@ -150,20 +138,7 @@ public class Selector extends Operand {
      * @return                              The requested <code>SuperColumn</code>
      * @throws Exception if an error occurs
      */
-    public SuperColumn getSuperColumnFromRow(final String rowKey, final String columnFamily, final Bytes superColName, final ConsistencyLevel cLevel) throws Exception {
-        return getSuperColumnFromRow(fromUTF8(rowKey), columnFamily, superColName, cLevel);
-    }
-
-    /**
-     * Retrieve a super column from a row.
-     * @param rowKey                        The key of the row
-     * @param columnFamily                  The name of the column family containing the super column
-     * @param superColName                  The name of the super column to retrieve
-     * @param cLevel                        The Cassandra consistency level with which to perform the operation
-     * @return                              The requested <code>SuperColumn</code>
-     * @throws Exception if an error occurs
-     */
-    public SuperColumn getSuperColumnFromRow(final Bytes rowKey, final String columnFamily, final Bytes superColName, final ConsistencyLevel cLevel) throws Exception {
+    public SuperColumn getSuperColumnFromRow(final Key rowKey, final String columnFamily, final Bytes superColName, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
@@ -186,8 +161,8 @@ public class Selector extends Operand {
      * @return                              The requested <code>Column</code>
      * @throws Exception if an error occurs
      */
-    public Column getSubColumnFromRow(final String rowKey, final String columnFamily, final Bytes superColName, final String subColName, final ConsistencyLevel cLevel) throws Exception {
-        return getSubColumnFromRow(fromUTF8(rowKey), columnFamily, superColName, fromUTF8(subColName), cLevel);
+    public Column getSubColumnFromRow(final Key rowKey, final String columnFamily, final Bytes superColName, final String subColName, final ConsistencyLevel cLevel) throws Exception {
+        return getSubColumnFromRow(rowKey, columnFamily, superColName, fromUTF8(subColName), cLevel);
     }
 
     /**
@@ -200,8 +175,8 @@ public class Selector extends Operand {
      * @return                              The requested <code>Column</code>
      * @throws Exception if an error occurs
      */
-    public Column getSubColumnFromRow(final String rowKey, final String columnFamily, final String superColName, final String subColName, final ConsistencyLevel cLevel) throws Exception {
-        return getSubColumnFromRow(fromUTF8(rowKey), columnFamily, fromUTF8(superColName), fromUTF8(subColName), cLevel);
+    public Column getSubColumnFromRow(final Key rowKey, final String columnFamily, final String superColName, final String subColName, final ConsistencyLevel cLevel) throws Exception {
+        return getSubColumnFromRow(rowKey, columnFamily, fromUTF8(superColName), fromUTF8(subColName), cLevel);
     }
 
     /**
@@ -214,8 +189,8 @@ public class Selector extends Operand {
      * @return                              The requested <code>Column</code>
      * @throws Exception if an error occurs
      */
-    public Column getSubColumnFromRow(final String rowKey, final String columnFamily, final String superColName, final Bytes subColName, final ConsistencyLevel cLevel) throws Exception {
-        return getSubColumnFromRow(fromUTF8(rowKey), columnFamily, fromUTF8(superColName), subColName, cLevel);
+    public Column getSubColumnFromRow(final Key rowKey, final String columnFamily, final String superColName, final Bytes subColName, final ConsistencyLevel cLevel) throws Exception {
+        return getSubColumnFromRow(rowKey, columnFamily, fromUTF8(superColName), subColName, cLevel);
     }
 
     /**
@@ -228,21 +203,7 @@ public class Selector extends Operand {
      * @return                              The requested <code>Column</code>
      * @throws Exception if an error occurs
      */
-    public Column getSubColumnFromRow(final String rowKey, final String columnFamily, final Bytes superColName, final Bytes subColName, final ConsistencyLevel cLevel) throws Exception {
-        return getSubColumnFromRow(fromUTF8(rowKey), columnFamily, superColName, subColName, cLevel);
-    }
-
-    /**
-     * Retrieve a sub column from a super column in a row.
-     * @param rowKey                        The key of the row
-     * @param columnFamily                  The name of the column family containing the super column
-     * @param superColName                  The name of the super column containing the sub column
-     * @param subColName                    The name of the sub column to retrieve
-     * @param cLevel                        The Cassandra consistency level with which to perform the operation
-     * @return                              The requested <code>Column</code>
-     * @throws Exception if an error occurs
-     */
-    public Column getSubColumnFromRow(final Bytes rowKey, final String columnFamily, final Bytes superColName, final Bytes subColName, final ConsistencyLevel cLevel) throws Exception {
+    public Column getSubColumnFromRow(final Key rowKey, final String columnFamily, final Bytes superColName, final Bytes subColName, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
@@ -265,7 +226,7 @@ public class Selector extends Operand {
      * @return                              A list of matching columns
      * @throws Exception if an error occurs
      */
-    public List<Column> getColumnsFromRow(String rowKey, String columnFamily, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
+    public List<Column> getColumnsFromRow(Key rowKey, String columnFamily, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
 
         return getColumnsFromRow(rowKey, newColumnParent(columnFamily), colPredicate, cLevel);
     }
@@ -280,7 +241,7 @@ public class Selector extends Operand {
      * @return                              A list of matching columns
      * @throws Exception if an error occurs
      */
-    public List<Column> getSubColumnsFromRow(String rowKey, String columnFamily, Bytes superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
+    public List<Column> getSubColumnsFromRow(Key rowKey, String columnFamily, Bytes superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
 
         return getColumnsFromRow(rowKey, newColumnParent(columnFamily, superColName), colPredicate, cLevel);
     }
@@ -295,18 +256,13 @@ public class Selector extends Operand {
      * @return                              A list of matching columns
      * @throws Exception if an error occurs
      */
-    public List<Column> getSubColumnsFromRow(String rowKey, String columnFamily, String superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
+    public List<Column> getSubColumnsFromRow(Key rowKey, String columnFamily, String superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
 
         return getColumnsFromRow(rowKey, newColumnParent(columnFamily, superColName), colPredicate, cLevel);
     }
 
     @SuppressWarnings("unchecked")
-    private List<Column> getColumnsFromRow(final String rowKey, final ColumnParent colParent, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
-        return getColumnsFromRow(fromUTF8(rowKey), colParent, colPredicate, cLevel);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Column> getColumnsFromRow(final Bytes rowKey, final ColumnParent colParent, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
+    private List<Column> getColumnsFromRow(final Key rowKey, final ColumnParent colParent, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
@@ -330,21 +286,7 @@ public class Selector extends Operand {
      * @throws Exception if an error occurs
      */
     @SuppressWarnings("unchecked")
-    public List<SuperColumn> getSuperColumnsFromRow(final String rowKey, final String columnFamily, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
-        return getSuperColumnsFromRow(fromUTF8(rowKey), columnFamily, colPredicate, cLevel);
-    }
-
-    /**
-     * Retrieve super columns from a row.
-     * @param rowKey                        The key of the row
-     * @param columnFamily                  The name of the column family containing the super columns
-     * @param colPredicate                  The super column selector predicate
-     * @param cLevel                        The Cassandra consistency level with which to perform the operation
-     * @return                              A list of matching columns
-     * @throws Exception if an error occurs
-     */
-    @SuppressWarnings("unchecked")
-    public List<SuperColumn> getSuperColumnsFromRow(final Bytes rowKey, final String columnFamily, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
+    public List<SuperColumn> getSuperColumnsFromRow(final Key rowKey, final String columnFamily, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
@@ -379,7 +321,7 @@ public class Selector extends Operand {
      * @return                              A page of columns
      * @throws Exception if an error occurs
      */
-    public List<Column> getPageOfColumnsFromRow(final String rowKey, final String columnFamily, final Bytes startBeyondName, final OrderType orderType, final boolean reversed, final int count, final ConsistencyLevel cLevel) throws Exception {
+    public List<Column> getPageOfColumnsFromRow(final Key rowKey, final String columnFamily, final Bytes startBeyondName, final OrderType orderType, final boolean reversed, final int count, final ConsistencyLevel cLevel) throws Exception {
 
         SlicePredicate predicate;
         if (startBeyondName == null)
@@ -408,7 +350,7 @@ public class Selector extends Operand {
      * @return                              A page of super columns
      * @throws Exception if an error occurs
      */
-    public List<SuperColumn> getPageOfSuperColumnsFromRow(final String rowKey, final String columnFamily, final Bytes startBeyondName, final OrderType orderType, final boolean reversed, final int count, final ConsistencyLevel cLevel) throws Exception {
+    public List<SuperColumn> getPageOfSuperColumnsFromRow(final Key rowKey, final String columnFamily, final Bytes startBeyondName, final OrderType orderType, final boolean reversed, final int count, final ConsistencyLevel cLevel) throws Exception {
 
         SlicePredicate predicate;
         if (startBeyondName == null)
@@ -434,7 +376,7 @@ public class Selector extends Operand {
      * @return                               A map from row keys to the matching lists of columns
      * @throws Exception if an error occurs
      */
-    public Map<Bytes, List<Column>> getColumnsFromRows(List<Bytes> rowKeys, String columnFamily, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
+    public Map<Bytes, List<Column>> getColumnsFromRows(List<Key> rowKeys, String columnFamily, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
 
         return getColumnsFromRows(rowKeys, newColumnParent(columnFamily), colPredicate, cLevel);
     }
@@ -449,7 +391,7 @@ public class Selector extends Operand {
      * @return                               A map from row keys to the matching lists of sub-columns
      * @throws Exception if an error occurs
      */
-    public Map<Bytes, List<Column>> getSubColumnsFromRows(List<Bytes> rowKeys, String columnFamily, String superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
+    public Map<Bytes, List<Column>> getSubColumnsFromRows(List<Key> rowKeys, String columnFamily, String superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
 
         return getColumnsFromRows(rowKeys, newColumnParent(columnFamily, superColName), colPredicate, cLevel);
     }
@@ -464,7 +406,7 @@ public class Selector extends Operand {
      * @return                               A map from row keys to the matching lists of sub-columns
      * @throws Exception if an error occurs
      */
-    public Map<Bytes, List<Column>> getSubColumnsFromRows(List<Bytes> rowKeys, String columnFamily, Bytes superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
+    public Map<Bytes, List<Column>> getSubColumnsFromRows(List<Key> rowKeys, String columnFamily, Bytes superColName, SlicePredicate colPredicate, ConsistencyLevel cLevel) throws Exception {
 
         return getColumnsFromRows(rowKeys, newColumnParent(columnFamily, superColName), colPredicate, cLevel);
     }
@@ -479,11 +421,11 @@ public class Selector extends Operand {
      * @throws Exception if an error occurs
      */
     @SuppressWarnings("unchecked")
-    public Map<Bytes, List<SuperColumn>> getSuperColumnsFromRows(final List<Bytes> rowKeys, final String columnFamily, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
+    public Map<Bytes, List<SuperColumn>> getSuperColumnsFromRows(final List<Key> rowKeys, final String columnFamily, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
-                Map<byte[], List<ColumnOrSuperColumn>> apiResult = conn.getAPI().multiget_slice(Bytes.transform(rowKeys), newColumnParent(columnFamily), colPredicate, cLevel);
+                Map<byte[], List<ColumnOrSuperColumn>> apiResult = conn.getAPI().multiget_slice(Bytes.transformKeys(rowKeys), newColumnParent(columnFamily), colPredicate, cLevel);
                 Map<Bytes, List<SuperColumn>> result = new HashMap<Bytes, List<SuperColumn>>();
                 for (byte[] rowKey : apiResult.keySet()) {
                     List<ColumnOrSuperColumn> coscList = apiResult.get(rowKey);
@@ -499,11 +441,11 @@ public class Selector extends Operand {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<Bytes, List<Column>> getColumnsFromRows(final List<Bytes> rowKeys, final ColumnParent colParent, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
+    private Map<Bytes, List<Column>> getColumnsFromRows(final List<Key> rowKeys, final ColumnParent colParent, final SlicePredicate colPredicate, final ConsistencyLevel cLevel) throws Exception {
         IOperation operation = new IOperation() {
             @Override
             public Object execute(Connection conn) throws Exception {
-                Map<byte[], List<ColumnOrSuperColumn>> apiResult = conn.getAPI().multiget_slice(Bytes.transform(rowKeys), colParent, colPredicate, cLevel);
+                Map<byte[], List<ColumnOrSuperColumn>> apiResult = conn.getAPI().multiget_slice(Bytes.transformKeys(rowKeys), colParent, colPredicate, cLevel);
                 Map<Bytes, List<Column>> result = new HashMap<Bytes, List<Column>>();
                 for (byte[] rowKey : apiResult.keySet()) {
                     List<ColumnOrSuperColumn> coscList = apiResult.get(rowKey);
@@ -696,18 +638,7 @@ public class Selector extends Operand {
      * @param maxKeyCount                     The maximum number of keys to be scanned
      * @return                                The new <code>KeyRange</code> instance
      */
-    public static KeyRange newKeyRange(String startKey, String finishKey, int maxKeyCount) {
-        return newKeyRange(fromUTF8(startKey), fromUTF8(finishKey), maxKeyCount);
-    }
-
-    /**
-     * Create a new <code>KeyRange</code> instance.
-     * @param startKey                        The inclusive start key of the range
-     * @param finishKey                       The inclusive finish key of the range
-     * @param maxKeyCount                     The maximum number of keys to be scanned
-     * @return                                The new <code>KeyRange</code> instance
-     */
-    public static KeyRange newKeyRange(Bytes startKey, Bytes finishKey, int maxKeyCount) {
+    public static KeyRange newKeyRange(Key startKey, Key finishKey, int maxKeyCount) {
         KeyRange keyRange = new KeyRange(maxKeyCount);
         keyRange.setStart_key(nullSafeGet(startKey));
         keyRange.setEnd_key(nullSafeGet(finishKey));
