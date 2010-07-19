@@ -25,12 +25,19 @@ import static org.wyki.cassandra.pelops.Bytes.transform;
  */
 public class Mutator extends Operand {
 
+    private boolean hasExecuted = false;
+
     /**
      * Execute the mutations that have been specified by sending them to Cassandra in a single batch.
      * @param cLevel                    The Cassandra consistency level to be used
      * @throws Exception
      */
     public void execute(final ConsistencyLevel cLevel) throws Exception {
+
+        if( hasExecuted ){
+            throw new Exception("Cannot reuse Mutator");
+        }
+
         final HashMap<byte[], Map<String, List<Mutation>>> convertedBatch = new HashMap<byte[], Map<String, List<Mutation>>>(batch.size());
         for (Map.Entry<Key, Map<String, List<Mutation>>> batchEntry : batch.entrySet()) {
             convertedBatch.put(batchEntry.getKey().getBytes(), batchEntry.getValue());
@@ -48,6 +55,7 @@ public class Mutator extends Operand {
             }
         };
         tryOperation(operation);
+        this.hasExecuted = true;
     }
 
     /**
